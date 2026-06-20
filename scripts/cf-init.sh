@@ -108,20 +108,89 @@ EOF
 }
 
 find_d1_database_id() {
-  DB_NAME="${DB_NAME}" npx wrangler d1 list --json -c "${LOCAL_CONFIG_PATH}" \
-    | node -e '
-const chunks = []
-process.stdin.on("data", (chunk) => chunks.push(chunk))
-process.stdin.on("end", () => {
-  const rows = JSON.parse(Buffer.concat(chunks).toString("utf8"))
-  const match = rows.find((row) => row.name === process.env.DB_NAME)
-  if (match) process.stdout.write(match.uuid || match.id || match.database_id || "")
-})
-'
+  local info_json=""
+  local list_json=""
+
+  if info_json="$(npx wrangler d1 info "${DB_NAME}" --json -c "${LOCAL_CONFIG_PATH}" 2>/dev/null)"; then
+    DB_NAME="${DB_NAME}" node -e '
+const data = JSON.parse(process.argv[1])
+const candidates = [data, data.result, data.database].filter(Boolean)
+const match = candidates.find((row) => row.name === process.env.DB_NAME || row.database_name === process.env.DB_NAME) || candidates[0]
+if (match) process.stdout.write(match.uuid || match.id || match.database_id || "")
+' "${info_json}"
+    return
+  fi
+
+  list_json="$(npx wrangler d1 list --json -c "${LOCAL_CONFIG_PATH}")"
+  DB_NAME="${DB_NAME}" node -e '
+const data = JSON.parse(process.argv[1])
+const rows = Array.isArray(data)
+  ? data
+  : Array.isArray(data.result)
+    ? data.result
+    : Array.isArray(data.databases)
+      ? data.databases
+      : []
+const match = rows.find((row) => row.name === process.env.DB_NAME || row.database_name === process.env.DB_NAME)
+if (match) process.stdout.write(match.uuid || match.id || match.database_id || "")
+' "${list_json}"
+}
+
+create_or_reuse_d1_database() {
+  local existing_database_id
+
+  existing_database_id="$(find_d1_database_id)"
+  if [[ -n "${existing_database_id}" ]]; then
+    echo "==> reusing existing D1 database: ${DB_NAME}"
+    append_d1_binding "${LOCAL_CONFIG_PATH}" "${existing_database_id}"
+    return
+  fi
+
+  if npx wrangler d1 create "${DB_NAME}" \
+    --binding DB \
+    --use-remote \
+    --update-config \
+    -c "${LOCAL_CONFIG_PATH}"; then
+    return
+  fi
+
+  existing_database_id="$(find_d1_database_id)"
+  if [[ -n "${existing_database_id}" ]]; then
+    echo "==> D1 database already exists; reusing: ${DB_NAME}"
+    append_d1_binding "${LOCAL_CONFIG_PATH}" "${existing_database_id}"
+    return
+  fi
+
+  echo "❌ Failed to create or find D1 database: ${DB_NAME}" >&2
+  exit 1
 }
 
 bucket_exists() {
   npx wrangler r2 bucket list -c "${LOCAL_CONFIG_PATH}" | grep -Fq "${R2_NAME}"
+}
+
+create_or_reuse_r2_bucket() {
+  if bucket_exists; then
+    echo "==> reusing existing R2 bucket: ${R2_NAME}"
+    append_r2_binding "${LOCAL_CONFIG_PATH}"
+    return
+  fi
+
+  if npx wrangler r2 bucket create "${R2_NAME}" \
+    --binding IMAGES \
+    --update-config \
+    -c "${LOCAL_CONFIG_PATH}"; then
+    return
+  fi
+
+  if bucket_exists; then
+    echo "==> R2 bucket already exists; reusing: ${R2_NAME}"
+    append_r2_binding "${LOCAL_CONFIG_PATH}"
+    return
+  fi
+
+  echo "❌ Failed to create or find R2 bucket: ${R2_NAME}" >&2
+  exit 1
 }
 
 cd "${REPO_ROOT}"
@@ -145,17 +214,7 @@ if ! section_has_key "d1_databases" "database_id" "${LOCAL_CONFIG_PATH}"; then
     strip_array_section "d1_databases" "${LOCAL_CONFIG_PATH}"
   fi
 
-  existing_database_id="$(find_d1_database_id)"
-  if [[ -n "${existing_database_id}" ]]; then
-    echo "==> reusing existing D1 database: ${DB_NAME}"
-    append_d1_binding "${LOCAL_CONFIG_PATH}" "${existing_database_id}"
-  else
-    npx wrangler d1 create "${DB_NAME}" \
-      --binding DB \
-      --use-remote \
-      --update-config \
-      -c "${LOCAL_CONFIG_PATH}"
-  fi
+  create_or_reuse_d1_database
 fi
 
 if ! section_has_key "r2_buckets" "bucket_name" "${LOCAL_CONFIG_PATH}"; then
@@ -163,15 +222,7 @@ if ! section_has_key "r2_buckets" "bucket_name" "${LOCAL_CONFIG_PATH}"; then
     strip_array_section "r2_buckets" "${LOCAL_CONFIG_PATH}"
   fi
 
-  if bucket_exists; then
-    echo "==> reusing existing R2 bucket: ${R2_NAME}"
-    append_r2_binding "${LOCAL_CONFIG_PATH}"
-  else
-    npx wrangler r2 bucket create "${R2_NAME}" \
-      --binding IMAGES \
-      --update-config \
-      -c "${LOCAL_CONFIG_PATH}"
-  fi
+  create_or_reuse_r2_bucket
 fi
 
 if [[ "${WITH_KV}" == "1" ]] && ! grep -Eq '^\[\[kv_namespaces\]\]' "${LOCAL_CONFIG_PATH}"; then
