@@ -2,7 +2,9 @@ import { resolve } from "node:path";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import type { NextConfig } from "next";
 
-void initOpenNextCloudflareForDev();
+if (process.env.ENABLE_CLOUDFLARE_DEV_CONTEXT === "true") {
+  void initOpenNextCloudflareForDev();
+}
 
 const nextConfig: NextConfig = {
   // 图片优化（Cloudflare 有自己的优化）
