@@ -1,6 +1,5 @@
 'use client'
 
-import html2pdf from 'html2pdf.js'
 import juice from 'juice'
 import { buildWechatExportCss, normalizeWechatExportHtml, type WechatExportStyleTokens } from './wechat-export-style'
 
@@ -459,6 +458,7 @@ export async function downloadArticleAsPdf(title: string, html: string) {
     throw new Error('当前环境不支持导出 PDF')
   }
 
+  const html2pdf = (await import('html2pdf.js')).default
   let prepared:
     | {
       stage: HTMLDivElement
