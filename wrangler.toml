@@ -1,4 +1,4 @@
-name = "qiaomu-blog-opensource"
+name = "xuanmu-blog"
 main = "worker.ts"
 compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
@@ -15,7 +15,7 @@ binding = "WORKERS_AI"
 
 [[services]]
 binding = "WORKER_SELF_REFERENCE"
-service = "qiaomu-blog-opensource"
+service = "xuanmu-blog"
 
 # Minimal resource bindings for open-source / Deploy to Cloudflare usage.
 # Modern Wrangler and Deploy buttons can auto-provision these resources.
@@ -30,10 +30,10 @@ binding = "IMAGES"
 # Optional Queue binding for background jobs. Uncomment after creating the queue.
 # [[queues.producers]]
 # binding = "BACKGROUND_QUEUE"
-# queue = "qiaomu-blog-background-jobs"
+# queue = "xuanmu-blog-background-jobs"
 #
 # [[queues.consumers]]
-# queue = "qiaomu-blog-background-jobs"
+# queue = "xuanmu-blog-background-jobs"
 
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://your-domain.com"
