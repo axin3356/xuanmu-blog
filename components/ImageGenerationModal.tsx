@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Sparkles,
+  Upload,
   X,
 } from 'lucide-react'
 import { Dropdown } from '@/components/Dropdown'
@@ -100,6 +101,7 @@ interface ImageGenerationModalProps {
   defaultPlacementMode?: 'insert' | 'replace'
   closeOnGenerate?: boolean
   generationMode?: 'background' | 'foreground'
+  onUpload?: (file: File) => Promise<string>
   onClose: () => void
   onInsert: (imageUrl: string, alt: string, placementMode?: 'insert' | 'replace') => void
 }
@@ -113,12 +115,14 @@ export function ImageGenerationModal({
   defaultPlacementMode = 'insert',
   closeOnGenerate = true,
   generationMode = 'background',
+  onUpload,
   onClose,
   onInsert,
 }: ImageGenerationModalProps) {
   const toast = useToast()
   const promptRef = useRef<HTMLTextAreaElement>(null)
   const templatesRef = useRef<HTMLDivElement>(null)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
 
   const [actions, setActions] = useState<ImageActionItem[]>([])
   const [profiles, setProfiles] = useState<ImageProfileItem[]>([])
@@ -135,6 +139,7 @@ export function ImageGenerationModal({
   const [historyItems, setHistoryItems] = useState<ImageHistoryItem[]>([])
   const [historyReady, setHistoryReady] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [placementMode, setPlacementMode] = useState<'insert' | 'replace'>(defaultPlacementMode)
   const [templatesExpanded, setTemplatesExpanded] = useState(false)
   const [templatesOverflowing, setTemplatesOverflowing] = useState(false)
@@ -367,7 +372,7 @@ export function ImageGenerationModal({
   ])
 
   const handleGenerate = useCallback(async () => {
-    if (!canGenerate || generating) return
+    if (!canGenerate || generating || uploading) return
 
     setError('')
     setResult(null)
@@ -413,7 +418,45 @@ export function ImageGenerationModal({
     } finally {
       setGenerating(false)
     }
-  }, [canGenerate, closeOnGenerate, generating, generationMode, onClose, requestImage, storeHistoryItem, toast])
+  }, [canGenerate, closeOnGenerate, generating, generationMode, onClose, requestImage, storeHistoryItem, toast, uploading])
+
+  const handleUploadFile = useCallback(async (file: File | null | undefined) => {
+    if (!file || uploading || generating) return
+    if (!onUpload) {
+      setError('当前编辑器没有接入上传功能')
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setError('请选择图片文件')
+      return
+    }
+
+    setError('')
+    setResult(null)
+    setHistoryOpen(false)
+    setShowRevisedPrompt(false)
+    setUploading(true)
+
+    try {
+      const url = await onUpload(file)
+      setResult({
+        url,
+        alt: file.name.replace(/\.[^.]+$/, '') || 'uploaded image',
+        revisedPrompt: '',
+        actionLabel: '本地上传',
+        aspectRatio: 'auto',
+        resolution: 'auto',
+        size: 'auto',
+        profileName: '本地上传',
+        model: '',
+      })
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : '图片上传失败')
+    } finally {
+      setUploading(false)
+      if (uploadInputRef.current) uploadInputRef.current.value = ''
+    }
+  }, [generating, onUpload, uploading])
 
   if (!open) return null
 
@@ -424,6 +467,15 @@ export function ImageGenerationModal({
         if (event.target === event.currentTarget) onClose()
       }}
     >
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          void handleUploadFile(event.target.files?.[0])
+        }}
+      />
       <div className="flex min-h-full items-center justify-center">
         <div className="flex w-full max-w-5xl max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-[28px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
           <div className="flex items-start justify-between gap-4 border-b border-[var(--editor-line)] px-5 py-4">
@@ -633,11 +685,20 @@ export function ImageGenerationModal({
                     </div>
                   ) : null}
 
-                  <div className="flex items-center justify-end gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => uploadInputRef.current?.click()}
+                      disabled={!onUpload || uploading || generating}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[var(--editor-line)] px-4 py-2 text-sm font-semibold text-[var(--editor-ink)] transition hover:bg-[var(--editor-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      {uploading ? '上传中…' : '上传图片'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => void handleGenerate()}
-                      disabled={!canGenerate || generating}
+                      disabled={!canGenerate || generating || uploading}
                       className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--editor-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -777,11 +838,22 @@ export function ImageGenerationModal({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-dashed border-[var(--editor-line)]/70 bg-white/35">
+                    <button
+                      type="button"
+                      onClick={() => uploadInputRef.current?.click()}
+                      onDrop={(event) => {
+                        event.preventDefault()
+                        void handleUploadFile(event.dataTransfer.files?.[0])
+                      }}
+                      onDragOver={(event) => event.preventDefault()}
+                      disabled={!onUpload || uploading || generating}
+                      className="flex min-h-[320px] w-full items-center justify-center rounded-2xl border border-dashed border-[var(--editor-line)]/70 bg-white/35 transition hover:border-[var(--editor-accent)] hover:bg-white/60 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
                       <div className="flex flex-col items-center gap-3 text-[var(--editor-muted)] opacity-60">
-                        <ImageIcon className="h-11 w-11" />
+                        {uploading ? <Loader2 className="h-11 w-11 animate-spin" /> : <ImageIcon className="h-11 w-11" />}
+                        <span className="text-sm">{uploading ? '图片上传中…' : '点击或拖拽上传图片'}</span>
                       </div>
-                    </div>
+                    </button>
                   )}
                 </div>
               </div>

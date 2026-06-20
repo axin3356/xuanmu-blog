@@ -1487,6 +1487,7 @@ export function NovelEditor({ initialData }: NovelEditorProps = {}) {
         contextText={imageModal.contextText}
         historyScope="admin-editor"
         closeOnGenerate={false}
+        onUpload={uploadImageAndGetUrl}
         onClose={closeImageModal}
         onInsert={insertGeneratedImage}
       />
@@ -1500,6 +1501,7 @@ export function NovelEditor({ initialData }: NovelEditorProps = {}) {
         defaultPlacementMode="replace"
         closeOnGenerate={false}
         generationMode="foreground"
+        onUpload={uploadImageAndGetUrl}
         onClose={() => setReferenceImageTarget(null)}
         onInsert={(imageUrl, alt, placementMode) => {
           if (!referenceImageTarget) return

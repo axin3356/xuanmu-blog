@@ -548,6 +548,7 @@ export function InlineArticleEditor({
         open={imageModal.open}
         contextText={imageModal.contextText}
         historyScope="inline-article"
+        onUpload={uploadImageAndGetUrl}
         onClose={closeImageModal}
         onInsert={insertGeneratedImage}
       />
@@ -561,6 +562,7 @@ export function InlineArticleEditor({
         defaultPlacementMode="replace"
         closeOnGenerate={false}
         generationMode="foreground"
+        onUpload={uploadImageAndGetUrl}
         onClose={() => setReferenceImageTarget(null)}
         onInsert={(imageUrl, alt, placementMode) => {
           if (!referenceImageTarget) return
