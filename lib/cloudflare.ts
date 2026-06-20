@@ -4,7 +4,7 @@ export async function getAppCloudflareContext() {
   try {
     return await getCloudflareContext({ async: true })
   } catch (error) {
-    if (process.env.NODE_ENV !== 'development') {
+    if (!shouldUseLocalRuntime()) {
       throw error
     }
 
@@ -27,9 +27,11 @@ export async function getAppCloudflareEnv() {
 
 async function getLocalDevEnv(): Promise<Partial<CloudflareEnv>> {
   const { getLocalD1Database } = await import('@/lib/local-d1')
+  const { getLocalImageBucket } = await import('@/lib/local-image-bucket')
 
   return {
     DB: getLocalD1Database(),
+    IMAGES: getLocalImageBucket(),
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     ADMIN_TOKEN_SALT: process.env.ADMIN_TOKEN_SALT,
     AI_CONFIG_ENCRYPTION_SECRET: process.env.AI_CONFIG_ENCRYPTION_SECRET,
@@ -45,4 +47,13 @@ async function getLocalDevEnv(): Promise<Partial<CloudflareEnv>> {
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
   }
+}
+
+function shouldUseLocalRuntime() {
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.APP_RUNTIME === 'node' ||
+    process.env.DEPLOY_TARGET === 'node' ||
+    process.env.LOCAL_RUNTIME === 'true'
+  )
 }

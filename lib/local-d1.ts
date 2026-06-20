@@ -17,13 +17,14 @@ let localDb: D1Database | undefined
 export function getLocalD1Database(): D1Database {
   if (localDb) return localDb
 
-  const dbPath = join(process.cwd(), '.local', 'xuanmu-blog.sqlite')
+  const dbPath = process.env.LOCAL_DB_PATH || join(process.cwd(), '.local', 'xuanmu-blog.sqlite')
   const shouldInitialize = !existsSync(dbPath)
   mkdirSync(dirname(dbPath), { recursive: true })
 
   const db = openSqliteDatabase(dbPath)
   if (shouldInitialize) {
     db.exec(readFileSync(join(process.cwd(), 'db', 'schema.sql'), 'utf8'))
+    db.exec(readFileSync(join(process.cwd(), 'db', 'seed-template.sql'), 'utf8'))
   }
 
   localDb = {
