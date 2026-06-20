@@ -56,11 +56,14 @@ class LocalD1PreparedStatement implements D1PreparedStatement {
   }
 
   async first<T = Record<string, unknown>>(): Promise<T | null> {
-    return (this.statement.get(...this.values) as T | undefined) ?? null
+    const row = this.statement.get(...this.values)
+    return row ? (toPlainObject(row) as T) : null
   }
 
   async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
-    return { results: this.statement.all(...this.values) as T[] }
+    return {
+      results: this.statement.all(...this.values).map((row) => toPlainObject(row)) as T[],
+    }
   }
 
   async run(): Promise<{ meta: { last_row_id: number } }> {
@@ -68,4 +71,13 @@ class LocalD1PreparedStatement implements D1PreparedStatement {
     const lastRowId = Number(result.lastInsertRowid ?? 0)
     return { meta: { last_row_id: lastRowId } }
   }
+}
+
+function toPlainObject(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') return value
+  if (Array.isArray(value)) return value.map(toPlainObject)
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, toPlainObject(entry)]),
+  )
 }
