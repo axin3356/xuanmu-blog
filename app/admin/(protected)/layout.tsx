@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers'
+﻿import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { isAdminAuthenticated, COOKIE_NAME } from '@/lib/admin-auth'
 import Link from 'next/link'
@@ -30,7 +30,7 @@ export default async function AdminProtectedLayout({
               className="text-lg tracking-tight text-[var(--editor-ink)] hover:text-[var(--editor-accent)] transition-colors duration-200"
               style={{ fontFamily: 'Georgia, "Noto Serif SC", serif', fontWeight: 500 }}
             >
-              乔木博客
+              玄木博客
             </Link>
             <span className="text-[var(--editor-line)] hidden sm:inline">/</span>
             <span className="text-[var(--stone-gray)] hidden sm:inline">管理后台</span>

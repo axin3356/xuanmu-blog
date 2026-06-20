@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 
@@ -15,9 +15,8 @@ interface Props {
 }
 
 const defaultLinks: NavLink[] = [
-  { label: 'GitHub', url: 'https://github.com/joeseesun/', openInNewTab: true },
-  { label: 'Twitter', url: 'https://x.com/vista8/', openInNewTab: true },
-  { label: 'About', url: '/about', openInNewTab: false },
+  { label: 'GitHub', url: 'https://github.com/axin3356/', openInNewTab: true },
+  { label: '关于', url: '/about', openInNewTab: false },
   { label: 'RSS', url: '/feed.xml', openInNewTab: false },
 ]
 

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+﻿import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 type SqliteDatabase = {
@@ -17,7 +17,7 @@ let localDb: D1Database | undefined
 export function getLocalD1Database(): D1Database {
   if (localDb) return localDb
 
-  const dbPath = join(process.cwd(), '.local', 'qiaomu-blog.sqlite')
+  const dbPath = join(process.cwd(), '.local', 'xuanmu-blog.sqlite')
   const shouldInitialize = !existsSync(dbPath)
   mkdirSync(dirname(dbPath), { recursive: true })
 

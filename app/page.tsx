@@ -1,4 +1,4 @@
-import { getPosts, getPostsCount } from '@/lib/db'
+﻿import { getPosts, getPostsCount } from '@/lib/db'
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
 import { type Theme } from '@/lib/appearance'
 import type { SiteCategoryLink, SiteNavLink } from '@/lib/site'
@@ -61,9 +61,9 @@ export default async function Home({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-            name: '乔木博客',
+            name: '玄木博客',
             url: BASE_URL,
-            description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
+            description: '沉淀原创思考、读书笔记、文章摘录与项目复盘，建立自己的长期知识资产。',
             potentialAction: {
               '@type': 'SearchAction',
               target: { '@type': 'EntryPoint', urlTemplate: `${BASE_URL}/search?q={search_term_string}` },
@@ -78,7 +78,7 @@ export default async function Home({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: '乔木博客',
+            name: '玄木博客',
             url: BASE_URL,
             logo: { '@type': 'ImageObject', url: `${BASE_URL}/icon-512.png` },
           }),

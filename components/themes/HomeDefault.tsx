@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { SiteHeader } from '@/components/SiteHeader'
@@ -34,7 +34,7 @@ export function HomeDefault({
         {posts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-[var(--editor-muted)] mb-3">还没有文章</p>
-            <p className="text-sm text-[var(--stone-gray)]">开始写作，记录思考</p>
+            <p className="text-sm text-[var(--stone-gray)]">开始写作，沉淀自己的知识资产</p>
           </div>
         ) : (
           <>

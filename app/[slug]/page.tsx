@@ -1,4 +1,4 @@
-import { getPostBySlug, incrementViewCount, isPubliclyAccessiblePost, isSearchIndexablePost } from '@/lib/db'
+﻿import { getPostBySlug, incrementViewCount, isPubliclyAccessiblePost, isSearchIndexablePost } from '@/lib/db'
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
 import { verifyPassword } from '@/lib/password'
 import { notFound } from 'next/navigation'
@@ -49,7 +49,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
       robots: searchIndexable ? undefined : { index: false, follow: false },
-      authors: [{ name: '向阳乔木' }],
+      authors: [{ name: '玄木' }],
       alternates: {
         canonical: `${baseUrl}/${post.slug}`,
       },
@@ -59,13 +59,13 @@ export async function generateMetadata({
         type: 'article',
         publishedTime: new Date(post.published_at * 1000).toISOString(),
         modifiedTime: new Date(post.updated_at * 1000).toISOString(),
-        authors: ['向阳乔木'],
+        authors: ['玄木'],
         images: [{ url: ogImage }],
       },
       twitter: {
         card: 'summary_large_image' as const,
-        site: '@vista8',
-        creator: '@vista8',
+        site: '@axin3356',
+        creator: '@axin3356',
         title: post.title,
         description: post.description || undefined,
         images: [ogImage],
@@ -203,8 +203,8 @@ export default async function PostPage({
             headline: post.title,
             description: post.description || '',
             image: ogImage,
-            author: { '@type': 'Person', name: '向阳乔木', url: 'https://x.com/vista8' },
-            publisher: { '@type': 'Organization', name: '乔木博客', url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
+            author: { '@type': 'Person', name: '玄木', url: 'https://github.com/axin3356' },
+            publisher: { '@type': 'Organization', name: '玄木博客', url: baseUrl, logo: { '@type': 'ImageObject', url: `${baseUrl}/icon-512.png` } },
             datePublished: new Date(post.published_at * 1000).toISOString(),
             dateModified: new Date(post.updated_at * 1000).toISOString(),
             mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/${post.slug}` },

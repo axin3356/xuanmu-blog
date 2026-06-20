@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
@@ -60,7 +60,7 @@ export function SiteFooter() {
                 href="/admin"
                 className="hover:text-[var(--editor-ink)] transition-colors duration-150 underline-offset-2 hover:underline"
               >
-                向阳乔木
+                玄木
               </Link>
               <span>·</span>
               <Link
@@ -81,7 +81,7 @@ export function SiteFooter() {
               onClick={() => setOpen(true)}
               className="hover:text-[var(--editor-ink)] transition-colors duration-150 underline-offset-2 hover:underline"
             >
-              向阳乔木
+              玄木
             </button>
           )}
         </div>

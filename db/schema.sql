@@ -217,5 +217,10 @@ CREATE INDEX idx_api_tokens_token ON api_tokens(token);
 -- 插入默认分类
 INSERT INTO categories (name, slug) VALUES
   ('未分类', 'uncategorized'),
-  ('AI工具', 'ai-tools'),
-  ('AI', 'ai');
+  ('个人随笔', 'notes'),
+  ('读书笔记', 'reading'),
+  ('文章摘录', 'clippings'),
+  ('工具方法', 'methods'),
+  ('项目复盘', 'projects'),
+  ('AI实验', 'ai-lab'),
+  ('AI工具', 'ai-tools');

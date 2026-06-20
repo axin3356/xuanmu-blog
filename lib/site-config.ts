@@ -1,5 +1,5 @@
-const DEV_SITE_URL = 'http://localhost:3000'
-const DEFAULT_PRODUCTION_SITE_URL = 'https://blog.qiaomu.ai'
+﻿const DEV_SITE_URL = 'http://localhost:3000'
+const DEFAULT_PRODUCTION_SITE_URL = 'https://xuanmu-blog.workers.dev'
 
 function parseSiteUrl(value: string): URL | null {
   try {
